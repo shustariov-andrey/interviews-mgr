@@ -1,20 +1,15 @@
 import { Disclosure, Menu, Transition } from '@headlessui/react';
 import { BellIcon, MenuIcon, XIcon } from '@heroicons/react/outline';
+import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Fragment, useEffect, useState } from 'react';
 import { NavigationItem, menuItems, getActiveMenuItem } from '../constants/menu-items';
 
-const user = {
-  name: 'Tom Cook',
-  email: 'tom@example.com',
-  imageUrl:
-    'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-};
 const userNavigation = [
-  { name: 'Your Profile', path: '#' },
-  { name: 'Settings', path: '#' },
-  { name: 'Sign out', path: '#' },
+  { name: 'Your Profile', path: '#', disabled: true },
+  { name: 'Settings', path: '#', disabled: true },
+  { name: 'Sign out', path: '/api/auth/signout', disabled: false },
 ];
 
 function classNames(...classes: string[]): string {
@@ -27,6 +22,12 @@ export default function Navbar() {
     const newItem = getActiveMenuItem();
     setActiveMenuItem(newItem ?? null);
   }, [setActiveMenuItem]);
+  const session = useSession();
+  const user = session.data?.user ?? {
+    name: '',
+    email: '',
+    image: ''
+  };
 
   return (
     <Disclosure as="nav" className="bg-gray-800">
@@ -44,15 +45,13 @@ export default function Navbar() {
                   <div className="ml-10 flex items-baseline space-x-4">
                     {menuItems.map((item) => (
                       <Link key={item.name} href={item.path}>
-                        <a
-                          className={classNames(
-                            item === activeMenuItem
-                              ? 'bg-gray-900 text-white'
-                              : 'text-gray-300 hover:bg-gray-700 hover:text-white',
-                            'px-3 py-2 rounded-md text-sm font-medium',
-                          )}
-                          aria-current={item === activeMenuItem ? 'page' : undefined}
-                        >
+                        <a className={classNames(
+                          item === activeMenuItem
+                            ? 'bg-gray-900 text-white'
+                            : 'text-gray-300 hover:bg-gray-700 hover:text-white',
+                          'px-3 py-2 rounded-md text-sm font-medium',
+                        )}
+                        aria-current={item === activeMenuItem ? 'page' : undefined}>
                           {item.name}
                         </a>
                       </Link>
@@ -77,7 +76,7 @@ export default function Navbar() {
                         className="max-w-xs bg-gray-800 rounded-full flex items-center text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
                         <span className="sr-only">Open user menu</span>
                         <div className="h-8 w-8 relative rounded-full overflow-hidden">
-                          <Image layout="fill" alt="User" src={user.imageUrl}/>
+                          {user.image && <Image layout="fill" alt="User" src={user.image}/>}
                         </div>
                       </Menu.Button>
                     </div>
@@ -93,20 +92,12 @@ export default function Navbar() {
                       <Menu.Items
                         className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
                         {userNavigation.map((item) => (
-                          <Menu.Item key={item.name}>
-                            {({ active }) => (
-                              <Link href={item.path}>
-                                <a
-                                  href={item.path}
-                                  className={classNames(
-                                    active ? 'bg-gray-100' : '',
-                                    'block px-4 py-2 text-sm text-gray-700',
-                                  )}
-                                >
-                                  {item.name}
-                                </a>
-                              </Link>
-                            )}
+                          <Menu.Item key={item.name} disabled={item.disabled}>
+                            <Link href={item.path}>
+                              <a className={classNames(item.disabled ? 'block px-4 py-2 text-sm text-gray-300' : 'block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100' )}>
+                                {item.name}
+                              </a>
+                            </Link>
                           </Menu.Item>
                         ))}
                       </Menu.Items>
@@ -150,7 +141,7 @@ export default function Navbar() {
               <div className="flex items-center px-5">
                 <div className="flex-shrink-0">
                   <div className="h-10 w-10 relative rounded-full overflow-hidden">
-                    <Image layout="fill" alt="User" src={user.imageUrl}/>
+                    {user.image && <Image layout="fill" alt="User" src={user.image}/>}
                   </div>
                 </div>
                 <div className="ml-3">

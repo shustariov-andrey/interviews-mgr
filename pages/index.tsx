@@ -1,5 +1,6 @@
 import { SearchIcon } from '@heroicons/react/solid';
 import type { GetServerSideProps, NextPage } from 'next';
+import { getSession, useSession } from 'next-auth/react';
 import { useState } from 'react';
 
 interface Profile {
@@ -11,10 +12,13 @@ interface Profile {
 }
 
 const Home: NextPage<{profiles: Profile[]}> = ({ profiles }) => {
+  const { data: session } = useSession();
+  if (!session) {
+  }
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredProfiles = profiles.filter(p =>
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) || p.position.toLowerCase().includes(searchTerm.toLowerCase())
+    p.name.toLowerCase().includes(searchTerm.toLowerCase()) || p.position.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   return (
@@ -26,7 +30,10 @@ const Home: NextPage<{profiles: Profile[]}> = ({ profiles }) => {
             <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
               <SearchIcon className="w-5 h-5 text-gray-500"></SearchIcon>
             </div>
-            <input type="search" onInput={(ev) => setSearchTerm((ev.target as HTMLInputElement).value)} id="table-search" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-80 pl-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search for items"/>
+            <input type="search" onInput={(ev) => setSearchTerm((ev.target as HTMLInputElement).value)}
+                   id="table-search"
+                   className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-80 pl-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                   placeholder="Search for items"/>
           </div>
         </div>
         <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
@@ -63,7 +70,7 @@ const Home: NextPage<{profiles: Profile[]}> = ({ profiles }) => {
               <td className="px-6 py-4">
                 {profile.score}
               </td>
-            </tr>
+            </tr>,
           )}
 
           </tbody>
@@ -74,7 +81,18 @@ const Home: NextPage<{profiles: Profile[]}> = ({ profiles }) => {
 };
 
 
-export const getServerSideProps: GetServerSideProps = async () => {
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const session = await getSession(context)
+
+  if (!session) {
+    return {
+      redirect: {
+        destination: '/api/auth/signin',
+        permanent: false,
+      },
+    }
+  }
+
   const profiles = [{
     id: '1',
     name: 'Andrey Belozor',
@@ -108,6 +126,7 @@ export const getServerSideProps: GetServerSideProps = async () => {
   }];
   return {
     props: {
+      session,
       profiles,
     },
   };
