@@ -3,8 +3,9 @@ import { BellIcon, MenuIcon, XIcon } from '@heroicons/react/outline';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { Fragment, useEffect, useState } from 'react';
-import { NavigationItem, menuItems, getActiveMenuItem } from '../constants/menu-items';
+import { getActiveMenuItem, menuItems, NavigationItem } from '../../lib/menu/menu-items';
 
 const userNavigation = [
   { name: 'Your Profile', path: '#', disabled: true },
@@ -18,16 +19,30 @@ function classNames(...classes: string[]): string {
 
 export default function Navbar() {
   const [activeMenuItem, setActiveMenuItem] = useState<NavigationItem | null>(null);
-  useEffect(() => {
-    const newItem = getActiveMenuItem();
-    setActiveMenuItem(newItem ?? null);
-  }, [setActiveMenuItem]);
   const session = useSession();
   const user = session.data?.user ?? {
     name: '',
     email: '',
     image: ''
   };
+
+  const router = useRouter()
+
+  useEffect(() => {
+    const handleRouteChange = () => {
+      const newItem = getActiveMenuItem();
+      setActiveMenuItem(newItem ?? null);
+    }
+
+    router.events.on('routeChangeComplete', handleRouteChange)
+
+    // If the component is unmounted, unsubscribe
+    // from the event with the `off` method:
+    handleRouteChange();
+    return () => {
+      router.events.off('routeChangeComplete', handleRouteChange)
+    }
+  }, [router.events])
 
   return (
     <Disclosure as="nav" className="bg-gray-800">

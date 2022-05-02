@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
-import { getActiveMenuItem, NavigationItem } from '../constants/menu-items';
+import React, { PropsWithChildren, useEffect, useState } from 'react';
+import { getActiveMenuItem, NavigationItem } from '../../lib/menu/menu-items';
 
-export default function Header() {
+const Header: React.FC<PropsWithChildren<{}>> = ({ children }) => {
   const [activeMenuItem, setActiveMenuItem] = useState<NavigationItem | null>(null);
   useEffect(() => {
     const newItem = getActiveMenuItem();
@@ -9,9 +9,12 @@ export default function Header() {
   }, [setActiveMenuItem]);
   return (
     <header className="bg-white shadow">
-      <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
         <h1 className="text-3xl font-bold text-gray-900">{activeMenuItem?.name}</h1>
+        {children}
       </div>
     </header>
   )
 }
+
+export default Header;

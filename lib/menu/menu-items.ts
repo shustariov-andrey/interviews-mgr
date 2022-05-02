@@ -1,4 +1,4 @@
-import { MenuItem } from '../features/menu/menu-item';
+import { MenuItem } from './menu-item';
 
 export interface NavigationItem {
   key: MenuItem;

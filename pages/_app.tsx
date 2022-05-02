@@ -1,8 +1,7 @@
 import '../styles/globals.css'
 import { SessionProvider } from 'next-auth/react';
 import type { AppProps } from 'next/app'
-import { wrapper } from '../app/store';
-import Layout from '../components/layout';
+import Layout from '../components/layout/layout';
 
 function MyApp({ Component, pageProps: {session, ...pageProps} }: AppProps) {
   return (
@@ -14,4 +13,4 @@ function MyApp({ Component, pageProps: {session, ...pageProps} }: AppProps) {
   );
 }
 
-export default wrapper.withRedux(MyApp);
+export default MyApp;
