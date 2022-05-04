@@ -1,5 +1,8 @@
-import { MongoClient } from 'mongodb';
+import { Mongoose } from 'mongoose';
 
 declare global {
-  declare var _mongoClientPromise: Promise<MongoClient>;
+  declare var mongoose: {
+    conn: Mongoose | null,
+    promise: Promise<Mongoose> | null,
+  };
 }

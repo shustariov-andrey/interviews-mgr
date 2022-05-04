@@ -1,30 +1,25 @@
 import { PlusIcon, SearchIcon } from '@heroicons/react/solid';
 import type { GetServerSideProps, NextPage } from 'next';
-import { getSession, useSession } from 'next-auth/react';
+import { getSession } from 'next-auth/react';
 import Link from 'next/link';
 import React, { useState } from 'react';
 import Header from '../components/layout/header';
 import Table, { TableProps } from '../components/table';
+import { Profile } from '../lib/domain/profile';
+import { InterviewService } from '../lib/services/interview.service';
 
-interface Profile {
-  id: string;
-  name: string;
-  position: string;
-  date: string;
+interface ProfileWithScore extends Profile {
   score: number;
 }
 
-const Home: NextPage<{profiles: Profile[]}> = ({ profiles }) => {
-  const { data: session } = useSession();
-  if (!session) {
-  }
+const Home: NextPage<{profiles: ProfileWithScore[]}> = ({ profiles }) => {
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredProfiles = profiles.filter(p =>
     p.name.toLowerCase().includes(searchTerm.toLowerCase()) || p.position.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  const table: TableProps<Profile> = {
+  const table: TableProps<ProfileWithScore> = {
     columns: [
       'name',
       'position',
@@ -35,11 +30,10 @@ const Home: NextPage<{profiles: Profile[]}> = ({ profiles }) => {
       name: 'Name',
       position: 'Position',
       date: 'Date',
-      score: 'Score'
+      score: 'Avg. Score',
     },
     data: filteredProfiles,
-    keyProp: 'id',
-  }
+  };
 
   return (
     <>
@@ -49,7 +43,7 @@ const Home: NextPage<{profiles: Profile[]}> = ({ profiles }) => {
             type="button"
             className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
-            <PlusIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
+            <PlusIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true"/>
             Add Interview
           </button>
         </Link>
@@ -70,7 +64,7 @@ const Home: NextPage<{profiles: Profile[]}> = ({ profiles }) => {
                        placeholder="Search for items"/>
               </div>
             </div>
-            <Table columns={table.columns} data={table.data} headers={table.headers} keyProp={table.keyProp}></Table>
+            <Table columns={table.columns} data={table.data} headers={table.headers}></Table>
           </div>
         </div>
       </div>
@@ -80,7 +74,7 @@ const Home: NextPage<{profiles: Profile[]}> = ({ profiles }) => {
 
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const session = await getSession(context)
+  const session = await getSession(context);
 
   if (!session) {
     return {
@@ -88,44 +82,20 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         destination: '/api/auth/signin',
         permanent: false,
       },
-    }
+    };
   }
 
-  const profiles = [{
-    id: '1',
-    name: 'Andrey Belozor',
-    position: 'Front-End Angular/Ionic',
-    date: '2020-09-01',
-    score: 2.22,
-  }, {
-    id: '2',
-    name: 'Vladyslav Shumik',
-    position: 'Front-End Angular/Ionic',
-    date: '2020-09-02',
-    score: 3.38,
-  }, {
-    id: '3',
-    name: 'Liudmyla Demenkova',
-    position: 'Front-End Angular/Ionic',
-    date: '2020-09-04',
-    score: 2.67,
-  }, {
-    id: '4',
-    name: 'Viacheslav Hromoi',
-    position: 'Front-End Angular/Ionic',
-    date: '2020-09-11',
-    score: 3.38,
-  }, {
-    id: '5',
-    name: 'Tymoshyk Dmitry',
-    position: 'NodeJs Developer',
-    date: '2020-12-08',
-    score: 2.4,
-  }];
+  const interviews = await InterviewService.getInstance().findAll(session);
+
   return {
     props: {
       session,
-      profiles,
+      profiles: interviews.map(({ profile, skills }) => ({
+        ...profile,
+        score: skills
+          .map(({ level }) => level)
+          .reduce((total, cur) => total + cur, 0) / skills.length,
+      })),
     },
   };
 };

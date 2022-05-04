@@ -4,15 +4,32 @@ import Card from '../../components/card/card';
 import CardBody from '../../components/card/card-body';
 import CardFooter from '../../components/card/card-footer';
 import InputControl from '../../components/form/input-control';
-import InterviewSkillsSection, { Skill } from '../../components/interview/interview-skills-section';
+import InterviewSkillsSection from '../../components/interview/interview-skills-section';
 import Section from '../../components/section/section';
 import SectionSeparator from '../../components/section/section-separator';
+import { Skill } from '../../lib/domain/skill';
 
 const InterviewEdit: NextPage = () => {
   const [candidate, setCandidate] = useState('');
   const [position, setPosition] = useState('');
   const [date, setDate] = useState('');
   const [skills, setSkills] = useState<Skill[]>([]);
+  const onSubmit: () => Promise<void> = async () => {
+    await fetch('/api/interviews', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        profile: {
+          name: candidate,
+          position,
+          date,
+        },
+        skills: skills.map(({ name, level }) => ({ name, level })),
+      }),
+    });
+  };
   return (
     <>
       <Section title="Interview Information" subtitle="Interview and candidates basic information">
@@ -45,6 +62,7 @@ const InterviewEdit: NextPage = () => {
             <CardFooter>
               <button
                 type="button"
+                onClick={onSubmit}
                 className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
                 Save

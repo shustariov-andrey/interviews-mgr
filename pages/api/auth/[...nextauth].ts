@@ -2,7 +2,7 @@ import { MongoDBAdapter } from '@next-auth/mongodb-adapter';
 import NextAuth, { NextAuthOptions } from 'next-auth';
 import GithubProvider from "next-auth/providers/github"
 import GoogleProvider from "next-auth/providers/google"
-import clientPromise from '../../../lib/mongodb';
+import dbConnect from '../../../lib/mongoose-connect';
 
 if (typeof process.env.GITHUB_ID !== 'string') {
   throw new Error('GITHUB_ID variable is not provided');
@@ -30,7 +30,15 @@ const options: NextAuthOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET
     }),
   ],
-  adapter: MongoDBAdapter(clientPromise),
+  adapter: MongoDBAdapter(dbConnect().then(mongoose => mongoose.connection.getClient())),
+  callbacks: {
+    async session({ session, user }) {
+      if (session.user) {
+        session.id = user.id;
+      }
+      return session
+    },
+  }
 };
 
 export default NextAuth(options);

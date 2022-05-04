@@ -1,15 +1,11 @@
 import { PlusIcon } from '@heroicons/react/solid';
 import React from 'react';
+import { Skill } from '../../lib/domain/skill';
 import Card from '../card/card';
 import CardBody from '../card/card-body';
 import InputControl from '../form/input-control';
 import ScoreControl from '../form/score-control';
 import Section from '../section/section';
-
-export interface Skill {
-  name: string;
-  level: number;
-}
 
 interface InterviewSkillsSectionProps {
   skills: Skill[];
