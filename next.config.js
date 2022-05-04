@@ -5,7 +5,8 @@ const nextConfig = {
     domains: [
         'tailwindui.com',
         'images.unsplash.com',
-        'avatars.githubusercontent.com'
+        'avatars.githubusercontent.com',
+        'lh3.googleusercontent.com'
     ]
   }
 }
