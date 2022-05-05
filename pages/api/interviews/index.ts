@@ -1,3 +1,4 @@
+import { withSentry } from '@sentry/nextjs';
 import * as mongoose from 'mongoose';
 import { NextApiHandler } from 'next';
 import { getSession } from 'next-auth/react';
@@ -38,4 +39,4 @@ const handler: NextApiHandler<Interview | ApiError> = async (req, res) => {
   }
 };
 
-export default handler;
+export default withSentry(handler);
