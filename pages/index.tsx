@@ -2,6 +2,7 @@ import { PlusIcon, SearchIcon } from '@heroicons/react/solid';
 import type { GetServerSideProps, NextPage } from 'next';
 import { getSession } from 'next-auth/react';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import React, { useState } from 'react';
 import Header from '../components/layout/header';
 import Table, { TableProps } from '../components/table';
@@ -9,11 +10,13 @@ import { Profile } from '../lib/domain/profile';
 import { InterviewService } from '../lib/services/interview.service';
 
 interface ProfileWithScore extends Profile {
+  id: string;
   score: number;
 }
 
 const Home: NextPage<{profiles: ProfileWithScore[]}> = ({ profiles }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const router = useRouter();
 
   const filteredProfiles = profiles.filter(p =>
     p.name.toLowerCase().includes(searchTerm.toLowerCase()) || p.position.toLowerCase().includes(searchTerm.toLowerCase()),
@@ -33,12 +36,15 @@ const Home: NextPage<{profiles: ProfileWithScore[]}> = ({ profiles }) => {
       score: 'Avg. Score',
     },
     data: filteredProfiles,
+    onRowClick: (item) => {
+      router.push(`/interview/${item.id}`)
+    }
   };
 
   return (
     <>
       <Header>
-        <Link href="/interview/edit" passHref>
+        <Link href="/interview/new" passHref>
           <button
             type="button"
             className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
@@ -64,7 +70,7 @@ const Home: NextPage<{profiles: ProfileWithScore[]}> = ({ profiles }) => {
                        placeholder="Search for items"/>
               </div>
             </div>
-            <Table columns={table.columns} data={table.data} headers={table.headers}></Table>
+            <Table columns={table.columns} data={table.data} headers={table.headers} onRowClick={table.onRowClick}></Table>
           </div>
         </div>
       </div>
@@ -90,7 +96,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   return {
     props: {
       session,
-      profiles: interviews.map(({ profile, skills }) => ({
+      profiles: interviews.map(({ _id: id, profile, skills }) => ({
+        id,
         ...profile,
         score: skills
           .map(({ level }) => level)

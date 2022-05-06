@@ -1,5 +1,5 @@
 import { StarIcon } from '@heroicons/react/solid';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 
 interface ScoreControlProps {
   label?: string;
@@ -9,15 +9,14 @@ interface ScoreControlProps {
 
 const ScoreControl: React.FC<ScoreControlProps> = ({ label, value, onChange }) => {
   const containerEl = useRef<HTMLDivElement>(null);
-  const stars = [1, 2, 3, 4, 5];
+  const stars = useMemo(() => [1, 2, 3, 4, 5], []);
+
+  const valueToIndex = useMemo(() => (value: number): number => stars.indexOf(value), [stars]);
 
   useEffect(() => {
-    highlight(value);
-  }, [value]);
+    highlight(valueToIndex(value));
+  }, [valueToIndex, stars, value]);
 
-  const valueToIndex = (value: number): number => {
-    return stars.indexOf(value);
-  };
 
   const highlight = (index: number): void => {
     const stars = Array.from((containerEl.current as HTMLElement).children);
@@ -32,13 +31,12 @@ const ScoreControl: React.FC<ScoreControlProps> = ({ label, value, onChange }) =
     }
   };
 
-  const select = (index: number): void => {
-    onChange(index);
+  const select = (value: number): void => {
+    onChange(value);
   };
 
   return (
     <>
-
       {
         label &&
         <label className="block text-sm font-medium text-gray-700">
@@ -49,7 +47,7 @@ const ScoreControl: React.FC<ScoreControlProps> = ({ label, value, onChange }) =
         {
           stars.map((currentValue, index) =>
             <StarIcon key={index} className="w-10 h-10 text-yellow-100" onMouseOver={() => highlight(index)}
-                      onMouseOut={() => highlight(value)} onClick={() => select(valueToIndex(currentValue))}></StarIcon>,
+                      onMouseOut={() => highlight(valueToIndex(value))} onClick={() => select(currentValue)}></StarIcon>,
           )
         }
       </div>

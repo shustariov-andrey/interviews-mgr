@@ -4,9 +4,10 @@ export interface TableProps<T extends object> {
   columns: Array<keyof T & string>;
   data: T[];
   headers: Partial<Record<keyof T, string>>;
+  onRowClick?: (item: T, rowIndex: number) => void;
 }
 
-const Table = <T extends object, >({ data, headers, columns }: TableProps<T>) => {
+const Table = <T extends object, >({ data, headers, columns, onRowClick }: TableProps<T>) => {
   return (
     <>
       <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
@@ -23,6 +24,7 @@ const Table = <T extends object, >({ data, headers, columns }: TableProps<T>) =>
         {
           data.map((item, rowIndex) =>
             <tr key={rowIndex}
+                onClick={() => onRowClick?.(item, rowIndex)}
                 className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
               {columns.map((col, colIndex) =>
                 colIndex === 0 ?
