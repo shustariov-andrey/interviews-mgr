@@ -51,6 +51,12 @@ const InterviewEdit: NextPage<InterviewEditProps> = ({ interview }) => {
       await router.push(`/interview/${newItem._id}`);
     }
   };
+
+  const deleteInterview: () => Promise<void> = async () => {
+    await ApiUtils.delete(`/api/interviews/${interview._id}`);
+    await router.push('/');
+  }
+
   return (
     <>
       <Section title="Interview Information" subtitle="Interview and candidates basic information">
@@ -81,6 +87,13 @@ const InterviewEdit: NextPage<InterviewEditProps> = ({ interview }) => {
               </div>
             </CardBody>
             <CardFooter>
+              <button
+                type="button"
+                onClick={deleteInterview}
+                className="mr-2 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+              >
+                Delete
+              </button>
               <button
                 type="button"
                 onClick={onSubmit}

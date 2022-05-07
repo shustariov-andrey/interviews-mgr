@@ -17,6 +17,9 @@ async function dbConnect(): Promise<Mongoose> {
   if (cached.conn) {
     return cached.conn
   }
+  if (process.env.NODE_ENV === 'development') {
+    mongoose.set('debug', true);
+  }
 
   if (!cached.promise) {
     const opts = {

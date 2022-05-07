@@ -1,4 +1,3 @@
-import { HydratedDocument } from 'mongoose';
 import { Session } from 'next-auth';
 import { Interview } from '../domain/interview';
 import InterviewModel from '../models/interview';
@@ -16,22 +15,15 @@ export class InterviewService {
 
   async save(interview: Interview, session: Session): Promise<Interview> {
     await dbConnect();
-    let saved: HydratedDocument<Interview>;
-    if (!interview._id) {
-      const model = new InterviewModel({
-        ...interview,
-        ownerId: session.id,
-      });
-      saved = await model.save();
-    } else {
-      saved = await InterviewModel
-        .findOneAndUpdate({ _id: interview._id }, { ...interview, ownerId: session.id }, {
-          upsert: true,
-          setDefaultsOnInsert: true,
-          returnDocument: 'after'
-        })
-        .exec();
+    let existingDoc = await InterviewModel.findById(interview._id);
+    if (!existingDoc) {
+      existingDoc = new InterviewModel();
     }
+    existingDoc.profile = interview.profile;
+    existingDoc.ownerId = session.id as string;
+    existingDoc.notes = interview.notes;
+    existingDoc.skills = interview.skills;
+    const saved = await existingDoc.save();
     return this.mapToPojo(saved?.toJSON({ versionKey: false }));
   }
 
@@ -50,6 +42,11 @@ export class InterviewService {
       return this.mapToPojo(doc!);
     }
     return null;
+  }
+
+  async deleteById(ownerId: string, id: string): Promise<any> {
+    await dbConnect();
+    return InterviewModel.findOneAndRemove({_id: id, ownerId});
   }
 
   private mapToPojo(doc: Interview): Interview {
