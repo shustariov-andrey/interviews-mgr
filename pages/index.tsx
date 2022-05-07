@@ -4,6 +4,7 @@ import { getSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useState } from 'react';
+import Button from '../components/button';
 import Header from '../components/layout/header';
 import Table, { TableProps } from '../components/table';
 import { Profile } from '../lib/domain/profile';
@@ -45,13 +46,10 @@ const Home: NextPage<{profiles: ProfileWithScore[]}> = ({ profiles }) => {
     <>
       <Header>
         <Link href="/interview/new" passHref>
-          <button
-            type="button"
-            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
+          <Button theme="indigo">
             <PlusIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true"/>
             Add Interview
-          </button>
+          </Button>
         </Link>
       </Header>
 
@@ -99,9 +97,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       profiles: interviews.map(({ _id: id, profile, skills }) => ({
         id,
         ...profile,
-        score: skills
+        score: (skills
           .map(({ level }) => level)
-          .reduce((total, cur) => total + cur, 0) / skills.length,
+          .reduce((total, cur) => total + cur, 0) / skills.length).toFixed(2),
       })),
     },
   };
